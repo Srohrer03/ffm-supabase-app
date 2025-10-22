@@ -1,0 +1,104 @@
+[
+  {
+    "id": 1,
+    "name": "CFS HQ – Oklahoma City",
+    "siteType": "Office",
+    "region": "Central",
+    "sqft": 95000,
+    "costCenter": "CC-1001",
+    "kpis": {
+      "openWorkOrders": 4,
+      "closedMTD": 28,
+      "pmCompliance": 96,
+      "reactivePct": 34,
+      "safetyIncidentsYTD": 0,
+      "maintenanceCostYTD": 184500,
+      "criticalOutagesMTD": 0
+    },
+    "recentActivity": [
+      "WO #3107 closed (Electrical) – Lighting ballast replaced",
+      "PM completed – Fire extinguisher inspections",
+      "WO #3111 opened (HVAC) – RTU #3 low cooling"
+    ],
+    "upcomingPM": [
+      { "task": "Quarterly HVAC filter change", "due": "Sep 12" },
+      { "task": "Emergency lighting test", "due": "Sep 19" }
+    ],
+    "monthlyCosts": [
+      { "month": "Apr", "cost": 27000 },
+      { "month": "May", "cost": 31000 },
+      { "month": "Jun", "cost": 25500 },
+      { "month": "Jul", "cost": 36000 },
+      { "month": "Aug", "cost": 42200 },
+      { "month": "Sep", "cost": 23000 }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Plant 1 – St. Louis",
+    "siteType": "Industrial",
+    "region": "Midwest",
+    "sqft": 180000,
+    "costCenter": "CC-2001",
+    "kpis": {
+      "openWorkOrders": 6,
+      "closedMTD": 40,
+      "pmCompliance": 91,
+      "reactivePct": 41,
+      "safetyIncidentsYTD": 1,
+      "maintenanceCostYTD": 322900,
+      "criticalOutagesMTD": 1
+    },
+    "recentActivity": [
+      "WO #2990 closed (Roofing) – Membrane patch near dock",
+      "PM completed – Fire pump weekly run",
+      "WO #3012 opened (Plumbing) – Breakroom sink leak"
+    ],
+    "upcomingPM": [
+      { "task": "Annual roof inspection", "due": "Sep 21" },
+      { "task": "Sprinkler flow test", "due": "Sep 28" }
+    ],
+    "monthlyCosts": [
+      { "month": "Apr", "cost": 43000 },
+      { "month": "May", "cost": 52000 },
+      { "month": "Jun", "cost": 48500 },
+      { "month": "Jul", "cost": 61000 },
+      { "month": "Aug", "cost": 70500 },
+      { "month": "Sep", "cost": 48000 }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Distribution Center – Dallas",
+    "siteType": "Warehouse",
+    "region": "South",
+    "sqft": 250000,
+    "costCenter": "CC-3001",
+    "kpis": {
+      "openWorkOrders": 3,
+      "closedMTD": 30,
+      "pmCompliance": 94,
+      "reactivePct": 27,
+      "safetyIncidentsYTD": 0,
+      "maintenanceCostYTD": 241300,
+      "criticalOutagesMTD": 0
+    },
+    "recentActivity": [
+      "WO #2871 closed (Janitorial) – Spill cleanup completed",
+      "PM completed – Exit sign testing",
+      "WO #2879 opened (Electrical) – Panel hot spot alert"
+    ],
+    "upcomingPM": [
+      { "task": "Quarterly dock leveler inspection", "due": "Sep 16" },
+      { "task": "Annual fire alarm test", "due": "Sep 29" }
+    ],
+    "monthlyCosts": [
+      { "month": "Apr", "cost": 38000 },
+      { "month": "May", "cost": 41000 },
+      { "month": "Jun", "cost": 39500 },
+      { "month": "Jul", "cost": 45500 },
+      { "month": "Aug", "cost": 50500 },
+      { "month": "Sep", "cost": 39000 }
+    ]
+  }
+]

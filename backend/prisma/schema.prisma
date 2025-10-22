@@ -1,0 +1,350 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  azureAdId String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  roleAssignments UserRoleAssignment[]
+  auditLogs       AuditLog[]
+  requestedWorkOrders WorkOrder[] @relation("WorkOrderRequester")
+  assignedWorkOrders  WorkOrder[] @relation("WorkOrderAssignee")
+  workOrderComments   WorkOrderComment[]
+  assignedMaintenanceTemplates MaintenanceTemplate[]
+  createdCapitalProjects CapitalProject[]
+  capitalProjectComments CapitalProjectComment[]
+  capitalProjectAttachments CapitalProjectAttachment[]
+
+  @@map("users")
+}
+
+model Role {
+  id        String   @id @default(cuid())
+  name      RoleName @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userAssignments UserRoleAssignment[]
+
+  @@map("roles")
+}
+
+model UserRoleAssignment {
+  id     String  @id @default(cuid())
+  userId String
+  roleId String
+  siteId String? // Nullable for site-scoped permissions
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId, siteId])
+  @@map("user_role_assignments")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String?
+  timestamp DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+enum RoleName {
+  ADMIN
+  FM
+  TECH
+  VENDOR
+  VIEWER
+}
+
+model Site {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  city      String
+  state     String
+  zip       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  buildings Building[]
+  workOrders WorkOrder[]
+  capitalProjects CapitalProject[]
+
+  @@map("sites")
+}
+
+model Building {
+  id        String   @id @default(cuid())
+  name      String
+  siteId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  site  Site   @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  areas Area[]
+
+  @@map("buildings")
+}
+
+model Area {
+  id         String   @id @default(cuid())
+  name       String
+  buildingId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  building Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  assets   Asset[]
+  workOrders WorkOrder[]
+
+  @@map("areas")
+}
+
+model Asset {
+  id           String    @id @default(cuid())
+  name         String
+  areaId       String
+  serialNumber String?
+  model        String?
+  manufacturer String?
+  installDate  DateTime?
+  status       AssetStatus @default(ACTIVE)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  area Area @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  workOrders WorkOrder[]
+
+  @@map("assets")
+}
+
+enum AssetStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  RETIRED
+}
+
+model WorkOrder {
+  id          String            @id @default(cuid())
+  title       String
+  description String?
+  status      WorkOrderStatus   @default(OPEN)
+  priority    WorkOrderPriority @default(MEDIUM)
+  siteId      String
+  areaId      String?
+  assetId     String?
+  requesterId String
+  assignedToId String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  completedAt DateTime?
+
+  // Relations
+  site        Site                    @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  area        Area?                   @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  asset       Asset?                  @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  requester   User                    @relation("WorkOrderRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  assignedTo  User?                   @relation("WorkOrderAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  comments    WorkOrderComment[]
+  attachments WorkOrderAttachment[]
+  maintenanceOccurrence MaintenanceOccurrence?
+  vendorAssignments VendorAssignment[]
+
+  @@map("work_orders")
+}
+
+model WorkOrderComment {
+  id          String   @id @default(cuid())
+  workOrderId String
+  userId      String
+  message     String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("work_order_comments")
+}
+
+model WorkOrderAttachment {
+  id          String   @id @default(cuid())
+  workOrderId String
+  url         String
+  filename    String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+
+  @@map("work_order_attachments")
+}
+
+enum WorkOrderStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum WorkOrderPriority {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
+}
+
+model Vendor {
+  id                  String   @id @default(cuid())
+  name                String
+  contactName         String
+  contactEmail        String   @unique
+  contactPhone        String
+  serviceCategories   String[]
+  insuranceExpiresAt  DateTime?
+  active              Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  assignments VendorAssignment[]
+
+  @@map("vendors")
+}
+
+model VendorAssignment {
+  id          String                   @id @default(cuid())
+  vendorId    String
+  workOrderId String
+  assignedAt  DateTime                 @default(now())
+  status      VendorAssignmentStatus   @default(PENDING)
+  notes       String?
+
+  // Relations
+  vendor     Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  workOrder  WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, workOrderId])
+  @@map("vendor_assignments")
+}
+
+enum VendorAssignmentStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model CapitalProject {
+  id                    String                      @id @default(cuid())
+  title                 String
+  description           String?
+  siteId                String
+  budget                Float
+  startDate             DateTime
+  targetCompletionDate  DateTime
+  status                CapitalProjectStatus        @default(PLANNING)
+  createdById           String
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+
+  // Relations
+  site        Site                        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  createdBy   User                        @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  phases      CapitalProjectPhase[]
+  attachments CapitalProjectAttachment[]
+  comments    CapitalProjectComment[]
+
+  @@map("capital_projects")
+}
+
+model CapitalProjectPhase {
+  id            String                    @id @default(cuid())
+  projectId     String
+  title         String
+  description   String?
+  startDate     DateTime?
+  endDate       DateTime?
+  status        CapitalProjectPhaseStatus @default(NOT_STARTED)
+  costEstimate  Float?
+  actualCost    Float?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  // Relations
+  project CapitalProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("capital_project_phases")
+}
+
+model CapitalProjectAttachment {
+  id           String   @id @default(cuid())
+  projectId    String
+  url          String
+  filename     String
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  // Relations
+  project    CapitalProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy User           @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@map("capital_project_attachments")
+}
+
+model CapitalProjectComment {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  message   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  project CapitalProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("capital_project_comments")
+}
+
+enum CapitalProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+enum CapitalProjectPhaseStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
