@@ -2,21 +2,25 @@ import { useEffect } from 'react'
 import { supabase } from './supabaseClient'
 
 export default function App() {
+  // Keep Supabase initialized (passive), but do NOT enable auth flows during build.
   useEffect(() => {
-    console.log('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL)
-    console.log('VITE_SUPABASE_ANON_KEY present:', Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY))
-
-    supabase.auth.getSession().then(({ data, error }: { data: unknown; error: unknown }) => {
-      console.log('Supabase session:', data)
-      console.log('Supabase error:', error)
-    })
+    supabase.auth.getSession()
   }, [])
 
   return (
     <div style={{ padding: '40px', fontSize: '18px' }}>
-      <div>FFM Supabase App - Connected</div>
-      <button disabled style={{ marginTop: '12px' }}>
-        Login (disabled)
+      <div style={{ fontWeight: 600 }}>FFM Supabase App - Connected</div>
+
+      <button
+        disabled
+        title="Login will be enabled after platform build is complete"
+        style={{
+          marginTop: '12px',
+          opacity: 0.5,
+          cursor: 'not-allowed'
+        }}
+      >
+        Login (disabled during build)
       </button>
     </div>
   )
